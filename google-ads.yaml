@@ -1,0 +1,6 @@
+# developer_token: "INSERT_YOUR_DEVELOPER_TOKEN"
+client_id: "733698100763-occscfvtlag4o8kujtrvqqphj8ebdgtn.apps.googleusercontent.com"
+client_secret: "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"
+# refresh_token: "INSERT_YOUR_REFRESH_TOKEN"
+# login_customer_id: "INSERT_MANAGER_ACCOUNT_ID"  # Optional for MCC
+use_proto_plus: true
