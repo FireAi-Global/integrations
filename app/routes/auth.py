@@ -19,7 +19,8 @@ SCOPES = [
     "openid"
 ]
 
-REDIRECT_URI = "http://localhost:8000/auth/callback"
+# REDIRECT_URI = "http://localhost:8000/auth/callback"
+REDIRECT_URI = "https://integrations-tmoy.onrender.com/auth/callback"
 TOKEN_FILE = "token.json"  # File where tokens will be saved
 STATE_FILE = "oauth_state.txt"  # File to store OAuth state
 
