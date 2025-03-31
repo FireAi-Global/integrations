@@ -1,6 +1,6 @@
 developer_token: "NUq5rU8nbcjMT3EEtK60MA"
 client_id: "733698100763-occscfvtlag4o8kujtrvqqphj8ebdgtn.apps.googleusercontent.com"
 client_secret: "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"
-# refresh_token: "INSERT_YOUR_REFRESH_TOKEN"
-# login_customer_id: "INSERT_MANAGER_ACCOUNT_ID"  # Optional for MCC
+refresh_token: "1//0gvc-StuIfBqFCgYIARAAGBASNwF-L9Ir49pWEESqDb399VWS6HKPGAfeSfIzOd4EPwNkxcZTYVvI0_zHf6LsOVuReJsTma_GZCI"
+login_customer_id: "3926789319"  # Optional for MCC
 use_proto_plus: true

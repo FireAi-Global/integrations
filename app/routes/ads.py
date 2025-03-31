@@ -20,6 +20,10 @@ def get_access_token():
 
         print(f"Using Access Token: {access_token}")  # Debugging
         return access_token
+    except FileNotFoundError:
+        raise HTTPException(status_code=401, detail=f"Error: {TOKEN_FILE} not found.")
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=401, detail=f"Error: Invalid JSON in {TOKEN_FILE}.")
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Error reading access token: {str(e)}")
 
@@ -34,7 +38,7 @@ def get_accessible_customers(access_token):
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=f"Google Ads API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail=f"Google Ads API error (listAccessibleCustomers): {response.text}")
 
     data = response.json()
     return [name.split("/")[-1] for name in data.get("resourceNames", [])]
@@ -46,46 +50,50 @@ async def get_campaigns():
 
     try:
         customer_ids = get_accessible_customers(access_token)
+        print(f"Accessible Customer IDs: {customer_ids}")
     except HTTPException as e:
         return {"error": str(e.detail)}
 
     if not customer_ids:
         return {"error": "No accessible customer IDs found"}
 
-    results = []
+    print(f"Customer IDs: {customer_ids}")  # Debugging output
+    all_campaigns = []
     for customer_id in customer_ids:
-        url = f"https://googleads.googleapis.com/v19/customers/{customer_id}/googleAds:searchStream"
+        url = f"https://googleads.googleapis.com/v19/customers/{customer_id}/googleAds:search"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "developer-token": DEVELOPER_TOKEN,
             "Content-Type": "application/json",
+            "login-customer-id": customer_id,  # Use the current customer_id as login customer ID
         }
-        # Updated GAQL query to check for more campaign details and status
         payload = {
             "query": """
-            SELECT campaign.name FROM campaign
+            SELECT campaign.id, campaign.name, campaign.status, campaign.advertising_channel_type FROM campaign
             """
         }
 
         response = requests.post(url, headers=headers, json=payload)
 
         if response.status_code == 200:
-            data = response.json()
-            # Debugging: print the response to see the data
-            print(f"Response Data for customer_id {customer_id}: {json.dumps(data, indent=2)}")
-            print("Data=", data)
-            for row in data.get("results", []):
-                results.append({
-                    "customer_id": customer_id,
-                    "campaign_id": row["campaign"]["id"],
-                    "campaign_name": row["campaign"]["name"],
-                    "status": row["campaign"]["status"],
-                    "advertising_channel_type": row["campaign"]["advertisingChannelType"]
-                })
+            try:
+                data = response.json()
+                print(f"Response Data for Customer ID {customer_id}: {json.dumps(data, indent=2)}")
+                campaigns = data.get("results", [])
+                print(f"Number of Campaigns found for Customer ID {customer_id}: {len(campaigns)}")
+                for row in campaigns:
+                    campaign_data = row.get("campaign")
+                    if campaign_data:
+                        all_campaigns.append({
+                            "customer_id": customer_id,
+                            "campaign_id": campaign_data.get("id"),
+                            "campaign_name": campaign_data.get("name"),
+                            "status": campaign_data.get("status"),
+                            "advertising_channel_type": campaign_data.get("advertisingChannelType"),
+                        })
+            except json.JSONDecodeError:
+                print(f"Error decoding JSON response for Customer ID {customer_id}: {response.text}")
         else:
-            print(f"Error fetching campaigns for {customer_id}: {response.text}")
-
-    if not results:
-        return {"error": "No campaigns found"}
-
-    return results
+            print(f"Error fetching campaigns for Customer ID {customer_id}: Status Code: {response.status_code}, Response: {response.text}")
+        break  # Remove this break to fetch campaigns for all accessible customers
+    return all_campaigns if all_campaigns else {"error": "No campaigns found across all accessible accounts"}
