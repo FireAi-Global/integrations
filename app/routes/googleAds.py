@@ -21,7 +21,7 @@ SCOPES = [
 REDIRECT_URI = "http://localhost:8000/callback"  # Ensure this is registered in Google Cloud Console
 
 # Google Ads Developer Token
-DEVELOPER_TOKEN = "NUq5rU8nbcjMT3EEtK60MA"
+DEVELOPER_TOKEN = "NUq5rU8nbcjMT3EEtK60MA"      # Permanent token.
 
 # Set up OAuth flow globally
 flow = Flow.from_client_secrets_file(
@@ -192,7 +192,7 @@ def fetch_client_accounts(client, manager_customer_id):
 
     return clients
 
-# Step 5: Fetch Campaigns for a Specific Customer ID
+# Step 5: Fetch Campaigns for a Specific Customer ID -> Query to be taken from USER
 @app.get("/details/{linked_account_id}")
 async def get_campaign_details(linked_account_id: str):
     """Fetches campaign details for the given linked account ID while using login_customer_id."""
