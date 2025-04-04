@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter
-from app.modules.google_ads.routes import router as google_ads_router
+from modules.google_ads.router.google_ads_router import router as google_ads_router
 import uvicorn
 import os
 # from app.routes.auth import router as ads_router
