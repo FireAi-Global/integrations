@@ -1,18 +1,20 @@
-from fastapi import FastAPI
-from app.routes.auth import router as auth_router
-from app.routes.ads import router as ads_router
+from fastapi import FastAPI, APIRouter
+from app.modules.google_ads.routes import router as google_ads_router
 import uvicorn
+import os
 # from app.routes.auth import router as ads_router
+
+router = APIRouter(prefix="/integrations", tags=["Integrations"])
 
 app = FastAPI()
 
-# Register routes
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(ads_router, prefix="/ads", tags=["Google Ads"])
-
 @app.get("/")
 async def root():
-    return {"message": "Google Ads Integration API"}
+    return {"message": "Welcome to integrations server"}
 
 if __name__ == "__main__":
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # ✅ Set this to allow HTTP in local testing
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# Register routes
+app.include_router(router=google_ads_router)

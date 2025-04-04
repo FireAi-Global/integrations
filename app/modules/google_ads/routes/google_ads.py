@@ -1,14 +1,9 @@
 import json
-import os
-import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter
 from fastapi.responses import RedirectResponse
 from google_auth_oauthlib.flow import Flow
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.ads.googleads.client import GoogleAdsClient
-
-# FastAPI app instance
-app = FastAPI()
 
 # OAuth 2.0 Config
 CLIENT_SECRETS_FILE = "client_secret.json"
@@ -30,15 +25,17 @@ flow = Flow.from_client_secrets_file(
     redirect_uri=REDIRECT_URI
 )
 
+router = APIRouter(prefix="/integrations/google_ads", tags=["Google Ads"])
+
 # Step 1: Google OAuth Login
-@app.get("/")
+@router.get("/login")
 async def login():
     """Redirects user to Google OAuth login page."""
     auth_url, _ = flow.authorization_url(prompt="consent")  # ✅ Removed duplicate redirect_uri
     return RedirectResponse(auth_url)
 
 # Step 2: Handle OAuth Callback & Get Refresh Token
-@app.get("/callback")
+@router.get("/callback")
 async def callback(request: Request):
     """Handles OAuth callback, fetches refresh token & saves credentials."""
     try:
@@ -113,7 +110,7 @@ async def callback(request: Request):
         return {"error": f"OAuth Callback Failed: {str(e)}"}
     
 # Step 3: Fetch Google Ads Account Details
-@app.get("/account-details")
+@router.get("/account-details")
 async def get_account_details():
     """Fetches account details (Manager or Direct Client Account)."""
 
@@ -193,7 +190,7 @@ def fetch_client_accounts(client, manager_customer_id):
     return clients
 
 # Step 5: Fetch Campaigns for a Specific Customer ID -> Query to be taken from USER
-@app.get("/details/{linked_account_id}")
+@router.get("/details/{linked_account_id}")
 async def get_campaign_details(linked_account_id: str):
     """Fetches campaign details for the given linked account ID while using login_customer_id."""
 
@@ -252,8 +249,3 @@ async def get_campaign_details(linked_account_id: str):
 
     except Exception as e:
         return {"error": f"Failed to fetch campaign details: {str(e)}"}
-
-# Run FastAPI Server
-if __name__ == "__main__":
-    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"  # ✅ Set this to allow HTTP in local testing
-    uvicorn.run(app, host="localhost", port=8000, reload=True)
