@@ -4,9 +4,12 @@ from fastapi.responses import RedirectResponse
 from google_auth_oauthlib.flow import Flow
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.ads.googleads.client import GoogleAdsClient
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # OAuth 2.0 Config
-CLIENT_SECRETS_FILE = "client_secret.json"
+CLIENT_SECRETS_FILE = "modules/google_ads/secrets/client_secret.json"
 SCOPES = [
     "https://www.googleapis.com/auth/adwords",
     "https://www.googleapis.com/auth/userinfo.email",
